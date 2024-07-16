@@ -7,10 +7,6 @@ from bs4 import BeautifulSoup
 import json
 
 
-# class HHparse:
-#     def __init__(self):
-
-
 def get_html_content(url, headers=None, params=None) -> str:
     html_content = ''
     try:
@@ -48,7 +44,7 @@ def get_vacancies_cards(content: str) -> list[dict]:
             print(f"Error. Can't find tag by attrs")
             continue
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error: {e}. Continue process...")
             continue
         page_cards.append({
             'title': vacancy_title,
@@ -74,16 +70,18 @@ def get_next_page_link(page_url: str, headers=None):
     return next_page_link
 
 
-def get_vacancies_by_pages(start_page_url: str, pages_num: int, headers=None, params=None):
+def get_vacancies_by_pages(start_page_url: str, pages_num: int = 1, headers=None, params=None):
     page_content = get_html_content(start_page_url, headers, params)
     has_next_page = True
     for page in range(pages_num):
+        print(f"Move to page #{page+1}")
+        time.sleep(1)
         if not has_next_page:
             break
         vacancy_cards = get_vacancies_cards(page_content)
         next_page_link = get_next_page_link(start_page_url, headers=headers)
         if next_page_link:
-            page_content = get_html_content(next_page_link, headers=headers, params=params)
+            page_content = get_html_content(next_page_link, headers=headers)
         else:
             has_next_page = False
         yield vacancy_cards
@@ -129,27 +127,27 @@ def save_json(data, filename):
 
 
 def main():
-    start_page_content = get_html_content(BASE_URL, headers=HEADERS, params=MAIN_PARAMS)
-    vacancy_cards = get_vacancies_cards(start_page_content)
-    print(f"Next page link: {get_next_page_link(BASE_URL, HEADERS, MAIN_PARAMS)}")
+    # start_page_content = get_html_content(BASE_URL, headers=HEADERS, params=MAIN_PARAMS)
     suitable_cards = []
     filtered_cards = []
     vacancies_stats = {'viewed': 0, 'suitable': 0, 'suitable_filtered': 0}
-    for card in vacancy_cards:
-        vacancy_description = get_vacancy_description(card['link'], headers=HEADERS)
-        vacancies_stats['viewed'] += 1
-        print(card)
-        if keyword_found(vacancy_description, KEYWORDS):
-            suitable_cards.append(card)
-            vacancies_stats['suitable'] += 1
-            if filter_by_currancy(card):
-                vacancies_stats['suitable_filtered'] += 1
-                filtered_cards.append(card)
-        time.sleep(1)
+    cards_count = 0
+    for page_cards in get_vacancies_by_pages(BASE_URL, 3, HEADERS, MAIN_PARAMS):
+        for card in page_cards:
+            cards_count += 1
+            print(f"Processing vacancies card #{cards_count}...", end=' ')
+            vacancy_description = get_vacancy_description(card['link'], headers=HEADERS)
+            vacancies_stats['viewed'] += 1
+            if keyword_found(vacancy_description, KEYWORDS):
+                suitable_cards.append(card)
+                vacancies_stats['suitable'] += 1
+                if filter_by_currancy(card):
+                    vacancies_stats['suitable_filtered'] += 1
+                    filtered_cards.append(card)
+            print("done!")
     print("Viewed vacancies: ", vacancies_stats['viewed'])
     print("Suitable vacancies: ", vacancies_stats['suitable'])
     print("Suitable filtered vacancies: ", vacancies_stats['suitable_filtered'])
-    print("Suitable vacancies: ", suitable_cards)
     save_json(suitable_cards, 'suitable_vacancies.json')
 
 
