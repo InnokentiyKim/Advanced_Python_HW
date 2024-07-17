@@ -7,7 +7,18 @@ from bs4 import BeautifulSoup
 import json
 
 
-def get_html_content(url, headers=None, params=None) -> str:
+def get_html_content(url: str, headers=None, params=None) -> str:
+    """
+    Извлекает HTML-содержимое по заданному URL.
+    Параметры:
+        url (str): URL, из которого извлекается HTML-содержимое.
+        headers (dict): Дополнительные заголовки запроса.
+        params (dict): Query-параметры запроса.
+    Возвращает:
+        str: Извлеченное HTML-содержимое.
+    Выбрасывает:
+        Exception: Если возникает ошибка при извлечении HTML-содержимого.
+    """
     html_content = ''
     try:
         response = requests.get(url, headers=headers, params=params)
@@ -20,6 +31,22 @@ def get_html_content(url, headers=None, params=None) -> str:
 
 
 def get_vacancies_cards(content: str) -> list[dict]:
+    """
+    Парсит HTML-содержимое для извлечения информации о вакансиях и возвращает список словарей,
+    содержащих иформацию о вакансиях.
+    Параметры:
+        content: HTML-содержимое для парсинга.
+    Возвращает:
+        Список словарей, содержащих детали вакансий. Каждый словарь имеет следующие ключи:
+           'title' (str): Название вакансии.
+           'salary' (str или None): Заработная плата вакансии. None если отсутствует.
+           'company' (str): Название компании.
+           'location' (str): Местоположение вакансии (город).
+           'link' (str): Ссылка на страницу вакансии.
+    Исключения:
+        AttributeError: Если не удается найти какие-либо теги в HTML-содержимом.
+        Exception: Если происходит любое другое исключение.
+    """
     soup = BeautifulSoup(content, 'lxml')
     page_cards = []
     vacancies_main_block = soup.find('main', attrs={'class': 'vacancy-serp-content'})
@@ -41,10 +68,10 @@ def get_vacancies_cards(content: str) -> list[dict]:
             company_name = company_name.replace('\xa0', ' ')
             vacancy_location = vacancy_info_block.find('span', attrs={'data-qa': 'vacancy-serp__vacancy-address'}).text
         except AttributeError:
-            print(f"Error. Can't find tag by attrs")
+            print(f"Error. Can't find tag by attrs. Skipping...")
             continue
         except Exception as e:
-            print(f"Error: {e}. Continue process...")
+            print(f"Error: {e}. Skipping...")
             continue
         page_cards.append({
             'title': vacancy_title,
@@ -56,7 +83,15 @@ def get_vacancies_cards(content: str) -> list[dict]:
     return page_cards
 
 
-def get_next_page_link(page_url: str, headers=None):
+def get_next_page_link(page_url: str, headers: dict = None):
+    """
+    Получает ссылку на следующую страницу на основе предоставленного URL страницы и необязательных заголовков.
+    Параметры:
+        page_url: URL текущей страницы.
+        headers: Заголовки для включения в запрос. По умолчанию None.
+    Возвращает:
+        str: URL следующей страницы. Пустая строка, если ссылка на следующую страницу не найдена.
+    """
     page_content = get_html_content(page_url, headers)
     next_page_link = ''
     soup = BeautifulSoup(page_content, 'lxml')
@@ -71,6 +106,18 @@ def get_next_page_link(page_url: str, headers=None):
 
 
 def get_vacancies_by_pages(start_page_url: str, pages_num: int = 1, headers=None, params=None):
+    """
+    Генерирует вакансии, переходя через несколько страниц и возвращает карточки вакансий.
+    Параметры:
+    start_page_url: URL начальной страницы.
+    pages_num: Количество страниц для перехода. По умолчанию 1.
+    headers: Заголовки для использования в запросах. По умолчанию None.
+    params: Query-параметры для передачи в запрос. По умолчанию None.
+    Выдает:
+    list[dict]: Список словарей, содержащих информацию о карточках вакансий.
+    Примечание:
+    Функция ожидает 1 секунду перед очередным запросом страницы, чтобы избежать перегрузки сервера.
+    """
     page_content = get_html_content(start_page_url, headers, params)
     has_next_page = True
     for page in range(pages_num):
@@ -88,6 +135,14 @@ def get_vacancies_by_pages(start_page_url: str, pages_num: int = 1, headers=None
 
 
 def keyword_found(text: str, keywords: list[str]) -> bool:
+    """
+    Функция, которая проверяет, есть ли в предоставленном тексте хотя бы одно из ключевых слов из списка.
+    Параметры:
+        text: Строка, представляющая входной текст для поиска ключевых слов.
+        keywords: Список строк, содержащий ключевые слова для поиска во входном тексте.
+    Возвращает:
+        bool: True, если хотя бы одно ключевое слово найдено, False в противном случае.
+    """
     for keyword in keywords:
         keyword = keyword.lower()
         text = text.lower().strip()
@@ -96,7 +151,20 @@ def keyword_found(text: str, keywords: list[str]) -> bool:
     return False
 
 
-def get_vacancy_description(link, headers=None, params=None) -> str:
+def get_vacancy_description(link: str, headers: dict = None, params: dict = None) -> str:
+    """
+    Получает описание вакансии по указанной ссылке
+    Параметры:
+        link: URL страницы вакансии.
+        headers: Заголовки, используемые в HTTP-запросе. По умолчанию None.
+        params: Query-параметры, используемые в HTTP-запросе. По умолчанию None
+    Возвращает:
+        str: Описание вакансии. Если описание не найдено, возвращается пустую строку
+    Выбрасывает:
+        AttributeError: Если тег с атрибутом 'data-qa', равным 'vacancy-description', не найден
+    Примечание:
+        Функция ожидает 1 секунду перед выполнением HTTP-запроса, чтобы избежать перегрузки сервера.
+    """
     time.sleep(1)
     vacancy_description = ''
     content = get_html_content(link, headers=headers, params=params)
@@ -109,7 +177,15 @@ def get_vacancy_description(link, headers=None, params=None) -> str:
     return vacancy_description
 
 
-def filter_by_currancy(vacancy_card, currancy='$') -> bool:
+def filter_by_currancy(vacancy_card: dict, currancy: str = '$') -> bool:
+    """
+    Отбор карточек вакансии по валюте.
+    Параметры:
+        vacancy_card: Словарь, представляющий карточку вакансии. Должен иметь ключ 'salary' со строковым значением.
+        currancy: Валюта для фильтрации. Значение по умолчанию: '$'.
+    Возвращает:
+        bool: True, если зарплата карточки вакансии содержит указанную валюту, в противном случае False.
+    """
     if vacancy_card['salary']:
         if currancy in vacancy_card['salary']:
             return True
@@ -117,22 +193,34 @@ def filter_by_currancy(vacancy_card, currancy='$') -> bool:
 
 
 def save_json(data, filename):
+    """
+    Сохраняет предоставленные данные в файл JSON.
+    Параметры:
+        data: Данные для сохранения в файл JSON.
+        filename: Имя файла JSON, в котором будут сохранены данные
+    Возвращает:
+        None
+    """
     try:
         with open(filename, 'w', encoding='utf-8') as file:
             json.dump(data, file, ensure_ascii=False)
     except FileExistsError:
         print("File already exists")
+        return
+    except PermissionError:
+        print("Permission denied")
+        return
     except Exception as error:
         print(f"{error} while saving json")
+        return
 
 
 def main():
-    # start_page_content = get_html_content(BASE_URL, headers=HEADERS, params=MAIN_PARAMS)
     suitable_cards = []
     filtered_cards = []
     vacancies_stats = {'viewed': 0, 'suitable': 0, 'suitable_filtered': 0}
     cards_count = 0
-    for page_cards in get_vacancies_by_pages(BASE_URL, 3, HEADERS, MAIN_PARAMS):
+    for page_cards in get_vacancies_by_pages(BASE_URL, 2, HEADERS, MAIN_PARAMS):
         for card in page_cards:
             cards_count += 1
             print(f"Processing vacancies card #{cards_count}...", end=' ')
@@ -148,7 +236,10 @@ def main():
     print("Viewed vacancies: ", vacancies_stats['viewed'])
     print("Suitable vacancies: ", vacancies_stats['suitable'])
     print("Suitable filtered vacancies: ", vacancies_stats['suitable_filtered'])
-    save_json(suitable_cards, 'suitable_vacancies.json')
+    if suitable_cards:
+        save_json(suitable_cards, 'suitable_vacancies.json')
+    if filtered_cards:
+        save_json(filtered_cards, 'suitable_filtered_vacancies.json')
 
 
 if __name__ == '__main__':
