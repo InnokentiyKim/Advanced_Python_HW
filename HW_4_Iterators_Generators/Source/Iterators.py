@@ -24,12 +24,5 @@ class FlatIterator:
 
 
 class CommonFlatIterator:
-    def __init__(self, list_of_lists):
-        self.list_of_lists = list_of_lists
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
+    def __init__(self):
         pass
-
