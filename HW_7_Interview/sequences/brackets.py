@@ -1,7 +1,7 @@
 from structures.stack import Stack
 
 
-def is_balanced_brackets(brackets_str: str):
+def is_balanced_brackets(brackets_str: str) -> bool:
     brackets_seq = Stack()
     brackets_dict = {')': '(', ']': '[', '}': '{'}
     for bracket in brackets_str:
