@@ -15,6 +15,9 @@ false_sequences = [
 
 
 def test_true_sequences(sequences: list[str]):
+    """
+    Тестирование функции is_balanced_brackets со сбалансированными последовательностями.
+    """
     print("Testing true sequences...")
     for i, sequence in enumerate(sequences, start=1):
         try:
@@ -25,6 +28,9 @@ def test_true_sequences(sequences: list[str]):
 
 
 def test_false_sequences(sequences: list[str]):
+    """
+    Тестирование функции is_balanced_brackets с несбалансированными последовательностями.
+    """
     print("Testing false sequences...")
     for i, sequence in enumerate(sequences, start=1):
         try:

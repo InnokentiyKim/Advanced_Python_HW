@@ -2,6 +2,13 @@ from structures.stack import Stack
 
 
 def is_balanced_brackets(brackets_str: str) -> bool:
+    """
+    Проверяет, сбалансирована ли скобочная последовательность в заданной строке.
+    Аргументы:
+        brackets_str: Строка, содержащая скобки.
+    Возвращает:
+        bool: True, если скобочная последовательность сбалансирована, False в противном случае.
+    """
     brackets_seq = Stack()
     brackets_dict = {')': '(', ']': '[', '}': '{'}
     for bracket in brackets_str:
