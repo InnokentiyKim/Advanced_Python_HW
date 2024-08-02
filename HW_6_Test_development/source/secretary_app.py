@@ -13,6 +13,11 @@ directories = {
 
 
 def check_document_existance(user_doc_number):
+    """
+    Функция проверки существования документа
+    Параметры: user_doc_number (string)
+    Возвращает: True - если документ существует, False - если нет
+    """
     doc_founded = False
     for current_document in documents:
         doc_number = current_document['number']
@@ -23,6 +28,11 @@ def check_document_existance(user_doc_number):
 
 
 def get_doc_owner_name(user_doc_number):
+    """
+    Функция возвращает имя владельца документа по его номеру
+    Параметры: номер документа user_doc_number (string)
+    Возращает: имя владельца документа (string), если документ не найден, возвращает None
+    """
     doc_exist = check_document_existance(user_doc_number)
     if doc_exist:
         for current_document in documents:
@@ -32,6 +42,11 @@ def get_doc_owner_name(user_doc_number):
 
 
 def get_doc_shelf(user_doc_number):
+    """
+    Функция возвращает полку, на которой хранится документ с заданным номером
+    Параметры: номер документа user_doc_number (string)
+    Возращает: полку, на которой хранится документ (string) если документ не найден, возвращает None
+    """
     doc_exist = check_document_existance(user_doc_number)
     if doc_exist:
         for directory_number, directory_docs_list in directories.items():
@@ -40,6 +55,12 @@ def get_doc_shelf(user_doc_number):
 
 
 def add_new_shelf(shelf_number=''):
+    """
+    Функция добавления новой полки
+    Параметры: номер полки shelf_number (string)
+    Возвращает: кортеж с номером полки(string) и True, если полка добавлена, иначе False
+    Создает новую полку в случае, если ее не существует
+    """
     if not shelf_number:
         shelf_number = input('Введите номер полки - ')
     if shelf_number not in directories.keys():
@@ -49,11 +70,21 @@ def add_new_shelf(shelf_number=''):
 
 
 def append_doc_to_shelf(doc_number, shelf_number):
+    """
+    Функция добавления документа в полку
+    Параметры: номер документа doc_number (string), номер полки shelf_number (string)
+    Возвращает: None
+    """
     add_new_shelf(shelf_number)
     directories[shelf_number].append(doc_number)
 
 
 def add_new_doc():
+    """
+    Функция добавления нового документа по введенным номеру документа, типу документа,
+    имени владельца и номеру полки.
+    Возвращает: номер полки (string)
+    """
     new_doc_number = input('Введите номер документа - ')
     new_doc_type = input('Введите тип документа - ')
     new_doc_owner_name = input('Введите имя владельца документа - ')
