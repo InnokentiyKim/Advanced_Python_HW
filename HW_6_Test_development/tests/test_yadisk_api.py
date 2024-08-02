@@ -10,7 +10,7 @@ class TestYandexDisk:
         self.TOKEN = os.getenv("TOKEN")
         self.url = "https://cloud-api.yandex.net/v1/disk/resources"
         self.false_url = "https://cloud-api.yandex.net/v1/disk/esource"
-        self.params = {'path': 'Pictures'}
+        self.params = {'path': 'Pictures_123'}
         self.headers = {'Authorization': f"OAuth {self.TOKEN}"}
         self.false_headers = {'Authorization': "OAuth"}
 

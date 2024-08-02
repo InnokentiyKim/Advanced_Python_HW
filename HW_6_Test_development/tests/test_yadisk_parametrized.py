@@ -8,7 +8,7 @@ load_dotenv()
 TOKEN = os.getenv("TOKEN")
 url = "https://cloud-api.yandex.net/v1/disk/resources"
 false_url = "https://cloud-api.yandex.net/v1/disk/esource"
-params = {'path': 'Pictures'}
+params = {'path': 'Pictures_123'}
 headers = {'Authorization': f"OAuth {TOKEN}"}
 false_headers = {'Authorization': "OAuth"}
 

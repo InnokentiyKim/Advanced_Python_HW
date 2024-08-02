@@ -5,25 +5,53 @@ from source.secretary_app import check_document_existance, get_doc_owner_name, g
 
 
 class TestSecretaryApp(TestCase):
+    """
+    Класс для тестирования "Секретаря" (secretary_app.py)
+    """
     def setUp(self):
+        """
+        Setup метод. Настройка тестового окружения путем инициализации тестовых переменных.
+        Этот метод инициализирует следующие переменные:
+        - `true_user_doc_number`: строка, представляющая корректный номер документа пользователя.
+        - `false_user_doc_number`: строка, представляющая некорректный номер документа пользователя.
+        - `true_shelf_number`: строка, представляющая корректный номер полки.
+        - `false_shelf_number`: строка, представляющая некорректный номер полки.
+        Этот метод вызывается перед каждым выполнением тестового метода.
+        """
         self.true_user_doc_number = "10006"
         self.false_user_doc_number = "3924-02"
         self.true_shelf_number = '3'
         self.false_shelf_number = '5'
 
     def tearDown(self):
+        """
+        Teardown метод. Удаляет атрибуты `true_user_doc_number`, `false_user_doc_number`,
+        `true_shelf_number` и `false_shelf_number` из текущего экземпляра класса.
+        Эта функция вызывается после выполнения каждого метода теста.
+        """
         del self.true_user_doc_number
         del self.false_user_doc_number
         del self.true_shelf_number
         del self.false_shelf_number
 
     def test_check_document_existance(self):
+        """
+        Тестирование функции проверки существования документа (check_document_existance).
+        Тестируются случаи с корректными и некорректными номерами документов пользователя.
+        Проверяется, что функция возвращает True для корректных и False для некорректных номеров.
+        """
         true_result = check_document_existance(self.true_user_doc_number)
         false_result = check_document_existance(self.false_user_doc_number)
         self.assertTrue(true_result)
         self.assertFalse(false_result)
 
     def test_get_doc_owner_name(self):
+        """
+        Тестирование функции получения имени владельца документа (`get_doc_owner_name`).
+        Этот тестовый случай проверяет поведение функции `get_doc_owner_name`,
+        проверяя, возвращает ли она правильное имя владельца для действительного номера документа
+        и `None` для недействительного номера документа.
+        """
         self.assertMultiLineEqual("Аристарх Павлов", get_doc_owner_name(self.true_user_doc_number))
         self.assertIsNone(get_doc_owner_name(self.false_user_doc_number))
 
@@ -36,7 +64,7 @@ class TestSecretaryApp(TestCase):
         self.assertIsNone(get_doc_shelf(self.false_user_doc_number))
 
     @mock.patch('builtins.input', side_effect=("5455 028765", "driver license", "Василий Иванов", "4"))
-    def test_add_new_doc(self, input):
+    def test_add_new_doc(self, mock_input):
         result = add_new_doc()
         expected = "4"
         self.assertEqual(expected, result)
